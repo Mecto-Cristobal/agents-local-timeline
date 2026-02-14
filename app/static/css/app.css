@@ -235,6 +235,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  position: relative;
 }
 
 .card .status {
@@ -292,16 +293,19 @@ button {
   font-size: 0.8rem;
 }
 
-.post-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.post-delete-btn {
+.post-delete-icon {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid #debbbb;
   background: #f4e3e3;
-  border-color: #debbbb;
   color: #7b2222;
-  font-size: 0.8rem;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
 }
 
 .payload {
