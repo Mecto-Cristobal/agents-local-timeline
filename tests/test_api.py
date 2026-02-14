@@ -54,3 +54,35 @@ def test_post_lifecycle():
     assert list_resp.status_code == 200
     assert len(list_resp.json()) == 1
     assert list_resp.json()[0]["account_id"] is None
+
+
+def test_system_progress_post():
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    TestingSessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    Base.metadata.create_all(bind=engine)
+
+    def override_get_db():
+        db = TestingSessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+
+    app.dependency_overrides[get_db] = override_get_db
+    client = TestClient(app)
+
+    resp = client.post(
+        "/api/agents/system/progress",
+        json={
+            "status": "OK",
+            "job_name": "ops-bias-review",
+            "human_text": "Bias incident reviewed and mitigation posted.",
+            "result_summary": "Runbook updated",
+            "tags_csv": "system,incident",
+            "raw_payload": {"source": "test"},
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["job_name"] == "ops-bias-review"
+    assert body["human_text"] == "Bias incident reviewed and mitigation posted."

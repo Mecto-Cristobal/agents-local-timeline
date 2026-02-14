@@ -246,6 +246,11 @@ button {
   color: #2b333d;
 }
 
+.human-text {
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
 .card footer {
   margin-top: 12px;
   display: grid;
@@ -262,6 +267,20 @@ button {
   padding: 10px;
   border-radius: 8px;
   overflow-x: auto;
+}
+
+.structured {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--muted);
 }
 
 .editor {

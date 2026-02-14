@@ -115,6 +115,26 @@
           "curl": "curl http://localhost:20000/api/agents/events"
         }
       ]
+    },
+    {
+      "name": "System",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/agents/system/progress",
+          "body_example": {
+            "status": "WARN",
+            "job_name": "bias-incident",
+            "human_text": "Potential bias detected. Investigation started.",
+            "result_summary": "Mitigation in progress",
+            "tags_csv": "system,incident",
+            "raw_payload": {
+              "source": "ops"
+            }
+          },
+          "curl": "curl -X POST http://localhost:20000/api/agents/system/progress -H \"Content-Type: application/json\" -d '{\"status\":\"WARN\",\"job_name\":\"bias-incident\",\"human_text\":\"Potential bias detected. Investigation started.\",\"result_summary\":\"Mitigation in progress\",\"tags_csv\":\"system,incident\"}'"
+        }
+      ]
     }
   ]
 }

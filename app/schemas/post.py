@@ -13,6 +13,7 @@ class PostBase(BaseModel):
     version: str = Field(default="")
     when_ts: datetime | None = None
 
+    human_text: str = Field(default="", max_length=280)
     goal: str = Field(default="")
     result_summary: str = Field(default="")
 
@@ -41,6 +42,7 @@ class PostUpdate(BaseModel):
     env: str | None = None
     version: str | None = None
     when_ts: datetime | None = None
+    human_text: str | None = Field(default=None, max_length=280)
     goal: str | None = None
     result_summary: str | None = None
     latency_p95_ms: float | None = None

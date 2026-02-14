@@ -45,6 +45,10 @@ if (!container) {
   dir.position.set(5, 10, 7);
   scene.add(dir);
 
+  const progressGroup = new THREE.Group();
+  progressGroup.name = "progressGroup";
+  scene.add(progressGroup);
+
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
   let selected = null;
@@ -93,7 +97,7 @@ if (!container) {
   const serializeScene = () => {
     const objects = [];
     scene.traverse((obj) => {
-      if (obj.isMesh && obj !== grid) {
+      if (obj.isMesh && obj !== grid && obj.parent !== progressGroup) {
         objects.push({
           type: obj.geometry.type,
           position: obj.position.toArray(),
@@ -113,7 +117,7 @@ if (!container) {
     } catch {
       parsed = {};
     }
-    const keep = new Set([grid, transform, hemi, dir]);
+    const keep = new Set([grid, transform, hemi, dir, progressGroup]);
     scene.children
       .filter((child) => child.isMesh && !keep.has(child))
       .forEach((child) => scene.remove(child));
@@ -134,6 +138,35 @@ if (!container) {
       scene.add(mesh);
     });
     selectObject(null);
+  };
+
+  const updateProgress = async () => {
+    const res = await fetch(\"/api/agents/posts?limit=200\");
+    if (!res.ok) return;
+    const posts = await res.json();
+    const counts = { OK: 0, WARN: 0, FAIL: 0 };
+    posts.forEach((post) => {
+      if (counts[post.status] !== undefined) {
+        counts[post.status] += 1;
+      }
+    });
+    const maxCount = Math.max(1, counts.OK, counts.WARN, counts.FAIL);
+    while (progressGroup.children.length) {
+      progressGroup.remove(progressGroup.children[0]);
+    }
+    const statuses = [
+      { key: \"OK\", color: 0x2f855a, x: -2 },
+      { key: \"WARN\", color: 0xc67c13, x: 0 },
+      { key: \"FAIL\", color: 0xb64242, x: 2 },
+    ];
+    statuses.forEach((status) => {
+      const height = 0.5 + (counts[status.key] / maxCount) * 3.5;
+      const geometry = new THREE.BoxGeometry(0.8, height, 0.8);
+      const material = new THREE.MeshStandardMaterial({ color: status.color });
+      const bar = new THREE.Mesh(geometry, material);
+      bar.position.set(status.x, height / 2, -3);
+      progressGroup.add(bar);
+    });
   };
 
   const refreshSceneList = async () => {
@@ -211,5 +244,7 @@ if (!container) {
   });
 
   await refreshSceneList();
+  await updateProgress();
+  setInterval(updateProgress, 20000);
   animate();
 }

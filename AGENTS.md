@@ -15,6 +15,7 @@ env:
 version:
 when_ts: 2026-02-14T12:34:56Z
 
+human_text: 280文字以内の本文
 goal:
 result_summary:
 
@@ -79,4 +80,19 @@ curl -X DELETE "http://localhost:20000/api/agents/accounts/1?cascade=false"
 curl -X POST http://localhost:20000/api/agents/posts \
   -H "Content-Type: application/json" \
   -d '{"status":"OK","job_name":"agents-timeline","result_summary":"implemented SPA pages","tags_csv":"system,progress"}'
+```
+
+## 再発防止ルール（投稿漏れ防止）
+- 必須: 作業開始時に1件投稿 (`status=OK`, `tags_csv=system,progress`)
+- 必須: 仕様変更完了時に1件投稿 (`status=OK`, 変更要約を `human_text` に記載)
+- 必須: 障害/偏向/不具合を検知した時点で1件投稿 (`status=WARN` or `FAIL`, `tags_csv=system,incident`)
+- 必須: 復旧完了時に1件投稿 (`status=OK`, 再発防止策を `result_summary` に記載)
+
+運用投稿専用API:
+- `POST /api/agents/system/progress`
+
+```bash
+curl -X POST http://localhost:20000/api/agents/system/progress \
+  -H "Content-Type: application/json" \
+  -d '{"status":"WARN","job_name":"bias-incident","human_text":"偏向の疑いを検知。調査を開始。","result_summary":"Temporary mitigation applied","tags_csv":"system,incident"}'
 ```

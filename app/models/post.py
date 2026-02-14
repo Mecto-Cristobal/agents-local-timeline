@@ -26,6 +26,7 @@ class Post(Base):
     version: Mapped[str] = mapped_column(String(100), default="")
     when_ts: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
+    human_text: Mapped[str] = mapped_column(String(280), default="")
     goal: Mapped[str] = mapped_column(Text, default="")
     result_summary: Mapped[str] = mapped_column(Text, default="")
 

@@ -11,6 +11,7 @@ Local-only timeline + 3D scene editor for agent runs.
 - Unread logic: any new post increments; Home refresh swaps timeline partial and clears unread.
 - FTS: SQLite FTS5 on key post text fields.
 - Accounts delete: `DELETE /api/agents/accounts/{id}` defaults to `cascade=false` and will orphan posts/scenes by setting `account_id` to null. Use `?cascade=true` to delete related posts/scenes.
+- System operations: `POST /api/agents/system/progress` can post run progress/incidents. Unhandled server exceptions are also posted automatically as `system,incident`.
 
 ## Quick Start (Windows)
 ```bash
