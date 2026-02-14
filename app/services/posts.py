@@ -34,6 +34,7 @@ def list_posts(
     since: datetime | None = None,
     limit: int = 50,
     q: str | None = None,
+    offset: int = 0,
 ) -> list[Post]:
     if q:
         sql = text(
@@ -43,9 +44,13 @@ def list_posts(
             WHERE fts MATCH :q
             ORDER BY p.created_at DESC
             LIMIT :limit
+            OFFSET :offset
             """
         )
-        ids = [row[0] for row in db.execute(sql, {"q": q, "limit": limit}).all()]
+        ids = [
+            row[0]
+            for row in db.execute(sql, {"q": q, "limit": limit, "offset": offset}).all()
+        ]
         if not ids:
             return []
         stmt = select(Post).where(Post.id.in_(ids)).order_by(desc(Post.created_at))
@@ -63,5 +68,5 @@ def list_posts(
         filters.append(Post.created_at > since)
     if filters:
         stmt = stmt.where(and_(*filters))
-    stmt = stmt.order_by(desc(Post.created_at)).limit(limit)
+    stmt = stmt.order_by(desc(Post.created_at)).offset(offset).limit(limit)
     return list(db.execute(stmt).scalars().all())

@@ -1,0 +1,36 @@
+<section class="page">
+  <div class="panel">
+    <h3>Account Settings</h3>
+    <form
+      class="stack"
+      hx-post="/accounts/create"
+      hx-target="#accounts-list"
+      hx-swap="innerHTML"
+    >
+      <input name="name" placeholder="Account name" required />
+      <input name="color" type="color" value="#2f6fb2" />
+      <button type="submit">Add account</button>
+    </form>
+    <div id="accounts-list">
+      {% include "partials/accounts_list.html" %}
+    </div>
+  </div>
+  <div class="panel">
+    <h3>Accounts Timeline</h3>
+    <div class="accounts">
+      {% for account in accounts %}
+      <a
+        class="account-link"
+        hx-get="/AGENTS/account/{{ account.id }}"
+        hx-target="#page-content"
+        hx-push-url="true"
+      >
+        <span class="pill" style="background: {{ account.color }}">{{ account.name }}</span>
+        <span class="muted">View posts</span>
+      </a>
+      {% else %}
+      <div class="empty">No accounts yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>

@@ -31,6 +31,9 @@ def test_post_lifecycle():
     assert account_resp.status_code == 200
     account_id = account_resp.json()["id"]
 
+    get_resp = client.get(f"/api/agents/accounts/{account_id}")
+    assert get_resp.status_code == 200
+
     post_resp = client.post(
         "/api/agents/posts",
         json={"account_id": account_id, "job_name": "Job", "status": "OK"},
@@ -44,6 +47,10 @@ def test_post_lifecycle():
     assert patch_resp.status_code == 200
     assert patch_resp.json()["status"] == "WARN"
 
+    delete_resp = client.delete(f"/api/agents/accounts/{account_id}")
+    assert delete_resp.status_code == 200
+
     list_resp = client.get("/api/agents/posts")
     assert list_resp.status_code == 200
     assert len(list_resp.json()) == 1
+    assert list_resp.json()[0]["account_id"] is None

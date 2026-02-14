@@ -1,0 +1,120 @@
+{
+  "title": "AGENTS API Catalog",
+  "base_url": "http://localhost:20000",
+  "sections": [
+    {
+      "name": "Accounts",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/agents/accounts",
+          "body_example": null,
+          "curl": "curl http://localhost:20000/api/agents/accounts"
+        },
+        {
+          "method": "POST",
+          "path": "/api/agents/accounts",
+          "body_example": {
+            "name": "Ops",
+            "color": "#2f6fb2",
+            "settings_json": {}
+          },
+          "curl": "curl -X POST http://localhost:20000/api/agents/accounts -H \"Content-Type: application/json\" -d '{\"name\":\"Ops\",\"color\":\"#2f6fb2\",\"settings_json\":{}}'"
+        },
+        {
+          "method": "GET",
+          "path": "/api/agents/accounts/{id}",
+          "body_example": null,
+          "curl": "curl http://localhost:20000/api/agents/accounts/1"
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/agents/accounts/{id}",
+          "body_example": {
+            "name": "Ops",
+            "color": "#b64242"
+          },
+          "curl": "curl -X PATCH http://localhost:20000/api/agents/accounts/1 -H \"Content-Type: application/json\" -d '{\"color\":\"#b64242\"}'"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/agents/accounts/{id}?cascade=false",
+          "body_example": null,
+          "curl": "curl -X DELETE \"http://localhost:20000/api/agents/accounts/1?cascade=false\""
+        }
+      ]
+    },
+    {
+      "name": "Posts",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/agents/posts",
+          "body_example": {
+            "status": "OK",
+            "job_name": "nightly-eval",
+            "goal": "sanity run",
+            "result_summary": "green",
+            "tags_csv": "eval,nightly"
+          },
+          "curl": "curl -X POST http://localhost:20000/api/agents/posts -H \"Content-Type: application/json\" -d '{\"status\":\"OK\",\"job_name\":\"nightly-eval\",\"goal\":\"sanity run\",\"result_summary\":\"green\",\"tags_csv\":\"eval,nightly\"}'"
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/agents/posts/{id}",
+          "body_example": {
+            "status": "WARN",
+            "error_summary": "latency spike"
+          },
+          "curl": "curl -X PATCH http://localhost:20000/api/agents/posts/1 -H \"Content-Type: application/json\" -d '{\"status\":\"WARN\",\"error_summary\":\"latency spike\"}'"
+        },
+        {
+          "method": "GET",
+          "path": "/api/agents/posts?status=OK&limit=10",
+          "body_example": null,
+          "curl": "curl \"http://localhost:20000/api/agents/posts?status=OK&limit=10\""
+        }
+      ]
+    },
+    {
+      "name": "Scenes",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/agents/scenes",
+          "body_example": {
+            "name": "demo",
+            "scene_json": "{\"objects\":[]}" 
+          },
+          "curl": "curl -X POST http://localhost:20000/api/agents/scenes -H \"Content-Type: application/json\" -d '{\"name\":\"demo\",\"scene_json\":\"{\\\"objects\\\":[]}\"}'"
+        },
+        {
+          "method": "GET",
+          "path": "/api/agents/scenes",
+          "body_example": null,
+          "curl": "curl http://localhost:20000/api/agents/scenes"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/agents/scenes/{id}",
+          "body_example": {
+            "name": "demo",
+            "scene_json": "{\"objects\":[]}" 
+          },
+          "curl": "curl -X PUT http://localhost:20000/api/agents/scenes/1 -H \"Content-Type: application/json\" -d '{\"name\":\"demo\",\"scene_json\":\"{\\\"objects\\\":[]}\"}'"
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/agents/events",
+          "body_example": null,
+          "curl": "curl http://localhost:20000/api/agents/events"
+        }
+      ]
+    }
+  ]
+}

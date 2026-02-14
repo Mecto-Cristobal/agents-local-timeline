@@ -1,6 +1,6 @@
 <div class="timeline-header">
-  <h2>Timeline</h2>
-  <span class="hint">Latest first</span>
+  <h2>{{ title or "Timeline" }}</h2>
+  <span class="hint">{{ subtitle or "Latest first" }}</span>
 </div>
 <div id="timeline-meta" data-last-seen="{{ last_seen }}"></div>
 <div class="cards">
@@ -9,4 +9,29 @@
   {% else %}
     <div class="empty">No posts yet.</div>
   {% endfor %}
+</div>
+<div class="pager">
+  {% if page > 1 %}
+  <button
+    hx-get="/AGENTS/timeline?page={{ page - 1 }}&limit={{ limit }}{% if account_id %}&account_id={{ account_id }}{% endif %}"
+    hx-target="#timeline"
+    hx-swap="innerHTML"
+  >
+    Prev
+  </button>
+  {% else %}
+  <button disabled>Prev</button>
+  {% endif %}
+  <span class="page-indicator">Page {{ page }}</span>
+  {% if has_next %}
+  <button
+    hx-get="/AGENTS/timeline?page={{ page + 1 }}&limit={{ limit }}{% if account_id %}&account_id={{ account_id }}{% endif %}"
+    hx-target="#timeline"
+    hx-swap="innerHTML"
+  >
+    Next
+  </button>
+  {% else %}
+  <button disabled>Next</button>
+  {% endif %}
 </div>

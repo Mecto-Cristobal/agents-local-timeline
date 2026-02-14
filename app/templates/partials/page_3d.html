@@ -1,0 +1,23 @@
+<section class="page">
+  <section class="editor">
+    <div class="editor-header">
+      <h3>3D Scene</h3>
+      <div class="editor-actions">
+        <input id="scene-name" placeholder="Scene name" />
+        <button id="scene-save">Save</button>
+        <button id="scene-load">Load</button>
+      </div>
+    </div>
+    <div class="editor-toolbar">
+      <button data-primitive="box">Add box</button>
+      <button data-primitive="sphere">Add sphere</button>
+      <button data-primitive="cone">Add cone</button>
+      <button id="delete-object">Delete selected</button>
+    </div>
+    <div class="editor-canvas" id="editor-canvas"></div>
+    <div class="editor-footer">
+      <select id="scene-list"></select>
+      <span id="editor-status"></span>
+    </div>
+  </section>
+</section>

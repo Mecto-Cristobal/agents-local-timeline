@@ -1,0 +1,30 @@
+<section class="page">
+  <div class="panel">
+    <h3>Create Post</h3>
+    <form
+      class="stack"
+      hx-post="/posts/create"
+      hx-target="#page-content"
+      hx-swap="innerHTML"
+      hx-push-url="/AGENTS"
+    >
+      <select name="account_id">
+        <option value="">(no account)</option>
+        {% for account in accounts %}
+        <option value="{{ account.id }}">{{ account.name }}</option>
+        {% endfor %}
+      </select>
+      <select name="status">
+        <option value="OK">OK</option>
+        <option value="WARN">WARN</option>
+        <option value="FAIL">FAIL</option>
+      </select>
+      <input name="job_name" placeholder="Job name" />
+      <textarea name="goal" placeholder="Goal"></textarea>
+      <textarea name="result_summary" placeholder="Result summary"></textarea>
+      <textarea name="error_summary" placeholder="Error summary"></textarea>
+      <input name="tags_csv" placeholder="tags (csv)" />
+      <button type="submit">Post</button>
+    </form>
+  </div>
+</section>

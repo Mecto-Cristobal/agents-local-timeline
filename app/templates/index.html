@@ -7,9 +7,9 @@
       <button
         id="home-btn"
         class="home-btn"
-        hx-get="/partials/timeline"
-        hx-target="#timeline"
-        hx-swap="innerHTML"
+        hx-get="/AGENTS?page=1&limit={{ limit }}"
+        hx-target="#page-content"
+        hx-push-url="true"
       >
         Home
         <span id="home-dot" class="dot hidden"></span>
@@ -18,75 +18,38 @@
       <button id="notify-btn" class="ghost">Enable notifications</button>
     </div>
 
-    <section class="panel">
-      <h3>Account Settings</h3>
-      <form
-        class="stack"
-        hx-post="/accounts/create"
-        hx-target="#accounts-list"
-        hx-swap="innerHTML"
-      >
-        <input name="name" placeholder="Account name" required />
-        <input name="color" type="color" value="#4b5563" />
-        <button type="submit">Add account</button>
-      </form>
-      <div id="accounts-list">
-        {% include "partials/accounts_list.html" %}
-      </div>
-    </section>
-
-    <section class="panel">
-      <h3>Quick Post</h3>
-      <form
-        class="stack"
-        hx-post="/posts/create"
-        hx-target="#timeline"
-        hx-swap="innerHTML"
-      >
-        <select name="account_id">
-          <option value="">(no account)</option>
-          {% for account in accounts %}
-          <option value="{{ account.id }}">{{ account.name }}</option>
-          {% endfor %}
-        </select>
-        <select name="status">
-          <option value="OK">OK</option>
-          <option value="WARN">WARN</option>
-          <option value="FAIL">FAIL</option>
-        </select>
-        <input name="job_name" placeholder="Job name" />
-        <textarea name="goal" placeholder="Goal"></textarea>
-        <textarea name="result_summary" placeholder="Result summary"></textarea>
-        <input name="tags_csv" placeholder="tags (csv)" />
-        <button type="submit">Post</button>
-      </form>
-    </section>
+    <nav class="nav-links">
+      <button
+        id="nav-timeline"
+        hx-get="/AGENTS?page=1&limit={{ limit }}"
+        hx-target="#page-content"
+        hx-push-url="true"
+      >Timeline</button>
+      <button
+        hx-get="/AGENTS/accounts"
+        hx-target="#page-content"
+        hx-push-url="true"
+      >Account Settings</button>
+      <button
+        hx-get="/AGENTS/post"
+        hx-target="#page-content"
+        hx-push-url="true"
+      >Post作成</button>
+      <button
+        hx-get="/AGENTS/3d"
+        hx-target="#page-content"
+        hx-push-url="true"
+      >3D</button>
+      <button
+        hx-get="/AGENTS/settings"
+        hx-target="#page-content"
+        hx-push-url="true"
+      >各種設定</button>
+    </nav>
   </aside>
 
-  <main class="timeline" id="timeline" data-last-seen="{{ last_seen }}">
-    {% include "partials/timeline.html" %}
+  <main id="page-content" class="page-content">
+    {% include content_template %}
   </main>
-
-  <section class="editor">
-    <div class="editor-header">
-      <h3>3D Scene</h3>
-      <div class="editor-actions">
-        <input id="scene-name" placeholder="Scene name" />
-        <button id="scene-save">Save</button>
-        <button id="scene-load">Load</button>
-      </div>
-    </div>
-    <div class="editor-toolbar">
-      <button data-primitive="box">Add box</button>
-      <button data-primitive="sphere">Add sphere</button>
-      <button data-primitive="cone">Add cone</button>
-      <button id="delete-object">Delete selected</button>
-    </div>
-    <div class="editor-canvas" id="editor-canvas"></div>
-    <div class="editor-footer">
-      <select id="scene-list"></select>
-      <span id="editor-status"></span>
-    </div>
-  </section>
 </div>
 {% endblock %}

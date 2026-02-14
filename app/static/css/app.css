@@ -1,15 +1,16 @@
 :root {
-  --bg: #0f1115;
-  --panel: #151922;
-  --panel-soft: #1a1f2a;
-  --text: #e3e7ef;
-  --muted: #98a3b3;
-  --accent: #5bbcff;
-  --ok: #5bd08a;
-  --warn: #f1c35f;
-  --fail: #f07b7b;
-  --border: #232b3a;
-  --shadow: rgba(0, 0, 0, 0.25);
+  color-scheme: only light;
+  --bg: #f6f3ee;
+  --panel: #ffffff;
+  --panel-soft: #f2ede6;
+  --text: #1c222b;
+  --muted: #6b7280;
+  --accent: #2f6fb2;
+  --ok: #2f855a;
+  --warn: #c67c13;
+  --fail: #b64242;
+  --border: #d6d0c8;
+  --shadow: rgba(20, 20, 20, 0.08);
 }
 
 * {
@@ -20,12 +21,12 @@ body {
   margin: 0;
   font-family: "IBM Plex Sans", system-ui, sans-serif;
   color: var(--text);
-  background: radial-gradient(circle at top left, #1b2230, #0b0d12 60%);
+  background: linear-gradient(180deg, #f8f5f0, #efe9e1 70%);
 }
 
 .app-shell {
   display: grid;
-  grid-template-columns: 280px 1fr 420px;
+  grid-template-columns: 260px 1fr;
   min-height: 100vh;
 }
 
@@ -36,6 +37,42 @@ body {
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+.nav-links {
+  display: grid;
+  gap: 10px;
+}
+
+.nav-links button {
+  text-align: left;
+  padding: 10px 12px;
+  background: #f6efe6;
+}
+
+.page-content {
+  padding: 24px 32px;
+}
+
+.page {
+  display: grid;
+  gap: 16px;
+}
+
+.account-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fbf7f1;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.muted {
+  color: var(--muted);
 }
 
 .logo {
@@ -106,7 +143,7 @@ input, select, textarea, button {
   font-family: inherit;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: #0f141d;
+  background: #f9f6f1;
   color: var(--text);
   padding: 8px 10px;
 }
@@ -118,12 +155,12 @@ textarea {
 
 button {
   cursor: pointer;
-  background: #22304a;
-  border: 1px solid #2f3d56;
+  background: #dde7f2;
+  border: 1px solid #c8d6e6;
 }
 
 .timeline {
-  padding: 28px 32px;
+  padding: 0;
   overflow-y: auto;
 }
 
@@ -142,6 +179,18 @@ button {
   display: grid;
   gap: 16px;
   margin-top: 18px;
+}
+
+.pager {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-indicator {
+  color: var(--muted);
+  font-size: 0.85rem;
 }
 
 .card {
@@ -194,7 +243,7 @@ button {
   display: grid;
   gap: 6px;
   font-size: 0.92rem;
-  color: #d8dee9;
+  color: #2b333d;
 }
 
 .card footer {
@@ -209,16 +258,17 @@ button {
 }
 
 .payload {
-  background: #0b0f16;
+  background: #f7f2eb;
   padding: 10px;
   border-radius: 8px;
   overflow-x: auto;
 }
 
 .editor {
-  padding: 24px;
-  background: linear-gradient(180deg, #141a25, #0d1118 70%);
-  border-left: 1px solid var(--border);
+  padding: 16px;
+  background: linear-gradient(180deg, #f4efe7, #ece5dc 70%);
+  border: 1px solid var(--border);
+  border-radius: 14px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -247,7 +297,7 @@ button {
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
-  background: #0b0f16;
+  background: #f3ede5;
 }
 
 .editor-footer {
@@ -279,13 +329,7 @@ button {
   .app-shell {
     grid-template-columns: 1fr;
   }
-  .editor {
-    order: 3;
-  }
-  .nav {
-    order: 1;
-  }
-  .timeline {
-    order: 2;
+  .page-content {
+    padding: 20px;
   }
 }

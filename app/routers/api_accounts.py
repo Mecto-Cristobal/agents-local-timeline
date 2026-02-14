@@ -6,9 +6,9 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.account import Account
 from app.schemas.account import AccountCreate, AccountOut, AccountUpdate
-from app.services.accounts import get_account, list_accounts, upsert_account
+from app.services.accounts import delete_account, get_account, list_accounts, upsert_account
 
-router = APIRouter(prefix="/api/agents/accounts", tags=["accounts"])
+router = APIRouter(prefix="/api/agents/accounts", tags=["Accounts"])
 
 
 @router.get("", response_model=list[AccountOut])
@@ -22,6 +22,14 @@ async def create_account_api(payload: AccountCreate, db: Session = Depends(get_d
     return upsert_account(db, account)
 
 
+@router.get("/{account_id}", response_model=AccountOut)
+async def get_account_api(account_id: int, db: Session = Depends(get_db)):
+    account = get_account(db, account_id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    return account
+
+
 @router.patch("/{account_id}", response_model=AccountOut)
 async def update_account_api(
     account_id: int, payload: AccountUpdate, db: Session = Depends(get_db)
@@ -33,3 +41,14 @@ async def update_account_api(
     for key, value in update_data.items():
         setattr(account, key, value)
     return upsert_account(db, account)
+
+
+@router.delete("/{account_id}")
+async def delete_account_api(
+    account_id: int, cascade: bool = False, db: Session = Depends(get_db)
+):
+    account = get_account(db, account_id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    delete_account(db, account, cascade=cascade)
+    return {"status": "deleted", "cascade": cascade}

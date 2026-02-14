@@ -5,11 +5,9 @@
   const notifyBtn = document.getElementById("notify-btn");
   const timeline = document.getElementById("timeline");
 
-  if (!timeline) return;
-
   const state = {
     unread: 0,
-    lastSeen: timeline.dataset.lastSeen || new Date().toISOString(),
+    lastSeen: timeline?.dataset.lastSeen || new Date().toISOString(),
   };
 
   const setUnread = (value) => {
@@ -31,9 +29,12 @@
 
   const refreshLastSeen = () => {
     const meta = document.getElementById("timeline-meta");
+    const activeTimeline = document.getElementById("timeline");
     if (meta?.dataset.lastSeen) {
       state.lastSeen = meta.dataset.lastSeen;
-      timeline.dataset.lastSeen = meta.dataset.lastSeen;
+      if (activeTimeline) {
+        activeTimeline.dataset.lastSeen = meta.dataset.lastSeen;
+      }
     }
   };
 
@@ -42,9 +43,15 @@
   });
 
   document.body.addEventListener("htmx:afterSwap", (event) => {
-    if (event.target && event.target.id === "timeline") {
+    const target = event.target;
+    if (target?.id === "timeline") {
       setUnread(0);
       refreshLastSeen();
+    } else if (target?.id === "page-content") {
+      if (document.getElementById("timeline")) {
+        setUnread(0);
+        refreshLastSeen();
+      }
     }
   });
 
