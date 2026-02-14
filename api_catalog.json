@@ -125,8 +125,19 @@
           "body_example": {
             "status": "WARN",
             "job_name": "bias-incident",
+            "env": "local",
+            "version": "1.0.0",
             "human_text": "Potential bias detected. Investigation started.",
+            "goal": "Contain and assess impact",
             "result_summary": "Mitigation in progress",
+            "latency_p95_ms": 180.5,
+            "tokens": 1024,
+            "cost_usd": 0.42,
+            "retries": 1,
+            "anomaly_summary": "Latency spike",
+            "error_summary": "Timeout on upstream call",
+            "data_deps_summary": "local sqlite + cache",
+            "next_action": "continue monitoring for 30m",
             "tags_csv": "system,incident",
             "raw_payload": {
               "source": "ops"

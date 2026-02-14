@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+from datetime import datetime
 from pathlib import Path
 
 import orjson
@@ -9,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.config import POST_HUMAN_TEXT_MAX_CHARS
 from app.models.account import Account
 from app.models.post import Post
+from app.services.persistence import save_and_refresh
 
 SYSTEM_ACCOUNT_NAME = "AGENTS System"
 SYSTEM_ACCOUNT_COLOR = "#2f6fb2"
@@ -38,10 +40,7 @@ def ensure_system_account(db: Session) -> Account:
     if account:
         return account
     account = Account(name=SYSTEM_ACCOUNT_NAME, color=SYSTEM_ACCOUNT_COLOR, settings_json={})
-    db.add(account)
-    db.commit()
-    db.refresh(account)
-    return account
+    return save_and_refresh(db, account)
 
 
 def create_system_post(
@@ -49,9 +48,20 @@ def create_system_post(
     *,
     status: str,
     job_name: str,
+    env: str = "",
+    version: str = "",
+    when_ts: datetime | None = None,
     human_text: str,
+    goal: str = "",
     result_summary: str = "",
+    latency_p95_ms: float | None = None,
+    tokens: int | None = None,
+    cost_usd: float | None = None,
+    retries: int | None = None,
+    anomaly_summary: str = "",
     error_summary: str = "",
+    data_deps_summary: str = "",
+    next_action: str = "",
     tags_csv: str = "system,progress",
     raw_payload: dict | None = None,
 ) -> Post:
@@ -60,9 +70,20 @@ def create_system_post(
         account_id=account.id,
         status=status,
         job_name=job_name,
+        env=env,
+        version=version,
+        when_ts=when_ts,
         human_text=human_text[:POST_HUMAN_TEXT_MAX_CHARS],
+        goal=goal,
         result_summary=result_summary,
+        latency_p95_ms=latency_p95_ms,
+        tokens=tokens,
+        cost_usd=cost_usd,
+        retries=retries,
+        anomaly_summary=anomaly_summary,
         error_summary=error_summary,
+        data_deps_summary=data_deps_summary,
+        next_action=next_action,
         tags_csv=tags_csv,
         raw_payload_json=(
             orjson.dumps(raw_payload, option=orjson.OPT_INDENT_2).decode("utf-8")
@@ -70,10 +91,7 @@ def create_system_post(
             else ""
         ),
     )
-    db.add(post)
-    db.commit()
-    db.refresh(post)
-    return post
+    return save_and_refresh(db, post)
 
 
 def post_update_if_changed(db: Session) -> bool:
@@ -98,6 +116,5 @@ def post_update_if_changed(db: Session) -> bool:
     )
     settings["last_reported_signature"] = signature
     account.settings_json = settings
-    db.add(account)
-    db.commit()
+    save_and_refresh(db, account)
     return True

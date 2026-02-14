@@ -4,20 +4,15 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.scene import Scene
+from app.services.persistence import save_and_refresh
 
 
 def create_scene(db: Session, scene: Scene) -> Scene:
-    db.add(scene)
-    db.commit()
-    db.refresh(scene)
-    return scene
+    return save_and_refresh(db, scene)
 
 
 def update_scene(db: Session, scene: Scene) -> Scene:
-    db.add(scene)
-    db.commit()
-    db.refresh(scene)
-    return scene
+    return save_and_refresh(db, scene)
 
 
 def get_scene(db: Session, scene_id: int) -> Scene | None:

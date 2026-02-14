@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.models.account import Account
 from app.models.post import Post
 from app.models.scene import Scene
+from app.services.persistence import save_and_refresh
 
 
 def get_account(db: Session, account_id: int) -> Account | None:
@@ -18,13 +19,11 @@ def list_accounts(db: Session) -> list[Account]:
 
 
 def upsert_account(db: Session, account: Account) -> Account:
-    db.add(account)
-    db.commit()
-    db.refresh(account)
-    return account
+    return save_and_refresh(db, account)
 
 
 def delete_account(db: Session, account: Account, cascade: bool = False) -> None:
+    # Default behavior keeps posts/scenes and nulls account_id.
     if cascade:
         db.execute(delete(Post).where(Post.account_id == account.id))
         db.execute(delete(Scene).where(Scene.account_id == account.id))

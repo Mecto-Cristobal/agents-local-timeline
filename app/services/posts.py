@@ -6,20 +6,15 @@ from sqlalchemy import Select, and_, desc, select, text
 from sqlalchemy.orm import Session
 
 from app.models.post import Post
+from app.services.persistence import save_and_refresh
 
 
 def create_post(db: Session, post: Post) -> Post:
-    db.add(post)
-    db.commit()
-    db.refresh(post)
-    return post
+    return save_and_refresh(db, post)
 
 
 def update_post(db: Session, post: Post) -> Post:
-    db.add(post)
-    db.commit()
-    db.refresh(post)
-    return post
+    return save_and_refresh(db, post)
 
 
 def get_post(db: Session, post_id: int) -> Post | None:
@@ -53,6 +48,7 @@ def list_posts(
         ]
         if not ids:
             return []
+        # Keep timeline order stable after FTS lookup.
         stmt = select(Post).where(Post.id.in_(ids)).order_by(desc(Post.created_at))
         return list(db.execute(stmt).scalars().all())
 

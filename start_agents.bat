@@ -2,7 +2,7 @@
 setlocal
 chcp 65001 >nul
 set PYTHONUTF8=1
-if "%AGENTS_HOST%"=="" set AGENTS_HOST=0.0.0.0
+if "%AGENTS_HOST%"=="" set AGENTS_HOST=127.0.0.1
 if "%AGENTS_PORT%"=="" set AGENTS_PORT=20000
 
 if not exist .venv (

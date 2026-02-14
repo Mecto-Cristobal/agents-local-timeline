@@ -9,7 +9,7 @@
       aria-label="Delete post"
       title="Delete post"
     >
-      ×
+      x
     </button>
     <div class="status">{{ post.status }}</div>
     <div class="job">{{ post.job_name }}</div>
@@ -44,11 +44,11 @@
         </div>
       </div>
       {% if post.raw_payload_json %}
-    <details>
-      <summary>Raw payload</summary>
-      <pre class="payload">{{ post.raw_payload_json }}</pre>
-    </details>
-    {% endif %}
+      <details>
+        <summary>Raw payload</summary>
+        <pre class="payload">{{ post.raw_payload_json }}</pre>
+      </details>
+      {% endif %}
     </details>
   </footer>
 </article>

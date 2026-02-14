@@ -1,25 +1,38 @@
-# AGENTS Timeline
+# AGENTS Timeline (v1.0.0)
 
-Local-only timeline + 3D scene editor for agent runs.
-**Do not expose this app to the internet.** It assumes a trusted local environment and has no auth.
+ローカル専用の AGENT 運用タイムラインアプリです。  
+FastAPI + SQLite + HTMX + three.js で構成され、進捗投稿・タイムライン閲覧・簡易3Dシーン編集を提供します。
 
-**Design Summary**
-- Directories: `app/` (FastAPI, templates, static), `migrations/` (Alembic), `tests/`, `data/` (SQLite).
-- Data flow: UI → HTMX forms → HTML partials; API clients → `/api/agents/*` JSON.
-- Realtime: SSE at `/api/agents/events` sends `new_post`. Client updates unread count and tab title.
-- Fallback: 20s polling hits `/api/agents/posts?since=...`.
-- Unread logic: any new post increments; Home refresh swaps timeline partial and clears unread.
-- FTS: SQLite FTS5 on key post text fields.
-- Accounts delete: `DELETE /api/agents/accounts/{id}` defaults to `cascade=false` and will orphan posts/scenes by setting `account_id` to null. Use `?cascade=true` to delete related posts/scenes.
-- System operations: `POST /api/agents/system/progress` can post run progress/incidents. Unhandled server exceptions are also posted automatically as `system,incident`.
+## 重要な前提
+- このアプリは **ローカル用途専用** です。
+- 認証はありません。信頼できる閉域環境のみで運用してください。
+- `start_agents.bat` の既定バインド先は `127.0.0.1` です（外部公開防止）。
 
-## Quick Start (Windows)
+## 主な機能
+- 投稿タイムライン（SSE + 20秒ポーリングのハイブリッド更新）
+- アカウント管理（既定削除は `cascade=false`）
+- 3Dシーン作成/保存/読込
+- 運用投稿 API（`/api/agents/system/progress`）
+- SQLite FTS5 検索（投稿テキストの全文検索）
+- サーバー例外の自動インシデント投稿
+- WSLキュー経由の遅延投稿取り込み
+
+## ディレクトリ構成
+- `app/`: FastAPIアプリ本体（routers/services/models/templates/static）
+- `migrations/`: Alembic マイグレーション
+- `tests/`: API/キュー処理のテスト
+- `scripts/`: 運用投稿用スクリプト（py/ps1/sh）
+- `data/`: SQLite DB とキューファイル
+- `codex-docs/`: 作業記録・仕様書・変更履歴
+
+## クイックスタート（Windows）
 ```bash
 start_agents.bat
 ```
-Open http://localhost:20000/AGENTS
 
-## Manual Start
+ブラウザで `http://localhost:20000/AGENTS` を開いてください。
+
+## 手動セットアップ
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
@@ -28,45 +41,33 @@ alembic upgrade head
 uvicorn app.main:app --host 127.0.0.1 --port 20000
 ```
 
-## API Examples
-Create post:
-```bash
-curl -X POST http://localhost:20000/api/agents/posts \
-  -H "Content-Type: application/json" \
-  -d '{"status":"OK","job_name":"nightly-eval","goal":"sanity run","result_summary":"green","tags_csv":"eval,nightly"}'
-```
-
-Update post:
-```bash
-curl -X PATCH http://localhost:20000/api/agents/posts/1 \
-  -H "Content-Type: application/json" \
-  -d '{"status":"WARN","error_summary":"latency spike"}'
-```
-
-List posts:
-```bash
-curl "http://localhost:20000/api/agents/posts?status=OK&limit=10"
-```
-
-Scenes:
-```bash
-curl -X POST http://localhost:20000/api/agents/scenes \
-  -H "Content-Type: application/json" \
-  -d '{"name":"demo","scene_json":"{\"objects\":[]}"}'
-```
-
-## Tests
+## テスト
 ```bash
 pytest
 ```
 
-## Lint / Format
+## API（代表例）
+投稿作成:
 ```bash
-ruff check .
-ruff format .
+curl -X POST http://localhost:20000/api/agents/posts ^
+  -H "Content-Type: application/json" ^
+  -d "{\"status\":\"OK\",\"job_name\":\"nightly-eval\",\"goal\":\"sanity run\",\"result_summary\":\"green\",\"tags_csv\":\"eval,nightly\"}"
 ```
 
-## Notes
-- This app is intended for local use only. Do not publish or expose outside localhost.
-- UI is HTMX + minimal JS; timeline updates are partial and fast.
-- 3D editor is a lightweight three.js scene with basic primitives and transform controls.
+運用投稿:
+```bash
+curl -X POST http://localhost:20000/api/agents/system/progress ^
+  -H "Content-Type: application/json; charset=utf-8" ^
+  -d "{\"status\":\"OK\",\"job_name\":\"ops\",\"human_text\":\"作業開始\",\"result_summary\":\"start\",\"tags_csv\":\"system,progress\"}"
+```
+
+## 変更時に注意すべきポイント
+- `delete_account(cascade=False)` は投稿/シーンを削除せず `account_id=NULL` にします。
+- FTS検索は `posts_fts` と `posts` 本体の2段取得です。順序保証のため `created_at DESC` を維持しています。
+- テストの in-memory SQLite は `StaticPool` 必須です。接続分離すると「テーブルが無い」失敗になります。
+- `editor.js` は `progressGroup` を選択対象から除外しています。削除対象の誤選択防止です。
+
+## 関連ドキュメント
+- `codex-docs/spec-ja.md`
+- `codex-docs/CHANGELOG.md`
+- `codex-docs/worklog-2026-02-14.md`

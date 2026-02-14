@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 import orjson
@@ -49,7 +49,7 @@ async def create_post_api(
                 "created_at": post.created_at.isoformat(),
                 "account_id": post.account_id,
             },
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
         )
         await request.app.state.broadcaster.publish(event)
 

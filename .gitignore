@@ -1,4 +1,8 @@
 *.pyc
+pytest-cache*
+.pytest_tmp/
+pytest-cache-files-*
+data/agents.db
 
 #Ignore vscode AI rules
 .github\instructions\codacy.instructions.md

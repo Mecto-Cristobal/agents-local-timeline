@@ -19,6 +19,14 @@ router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
 
+def _is_hx(request: Request) -> bool:
+    return request.headers.get("HX-Request") == "true"
+
+
+def _now_iso() -> str:
+    return datetime.now(tz=timezone.utc).isoformat()
+
+
 def _paginate_posts(
     db: Session, page: int, limit: int, account_id: int | None = None
 ) -> tuple[list[Post], bool, int, int]:
@@ -48,17 +56,35 @@ def _timeline_context(
     page: int,
     limit: int,
     has_next: bool,
-    last_seen: str,
     account_id: int | None = None,
 ) -> dict:
     return {
         "request": request,
         "posts": posts,
-        "last_seen": last_seen,
+        "last_seen": _now_iso(),
         "page": page,
         "limit": limit,
         "has_next": has_next,
         "account_id": account_id,
+    }
+
+
+def _shell_context(
+    request: Request,
+    *,
+    accounts: list[Account],
+    content_template: str,
+    title: str = "Timeline",
+    subtitle: str = "Latest first",
+    limit: int = 50,
+) -> dict:
+    return {
+        "request": request,
+        "accounts": accounts,
+        "title": title,
+        "subtitle": subtitle,
+        "limit": limit,
+        "content_template": content_template,
     }
 
 
@@ -71,23 +97,25 @@ async def agents_home(
 ):
     accounts = list_accounts(db)
     posts, has_next, safe_page, safe_limit = _paginate_posts(db, page, limit)
-    last_seen = datetime.now(tz=timezone.utc).isoformat()
     title, subtitle = _timeline_heading(db, account_id=None)
     context = {
-        "accounts": accounts,
-        "title": title,
-        "subtitle": subtitle,
-        "content_template": "partials/page_timeline.html",
+        **_shell_context(
+            request,
+            accounts=accounts,
+            title=title,
+            subtitle=subtitle,
+            limit=safe_limit,
+            content_template="partials/page_timeline.html",
+        ),
         **_timeline_context(
             request,
             posts,
             page=safe_page,
             limit=safe_limit,
             has_next=has_next,
-            last_seen=last_seen,
         ),
     }
-    if request.headers.get("HX-Request") == "true":
+    if _is_hx(request):
         return templates.TemplateResponse("partials/page_timeline.html", context)
     return templates.TemplateResponse("index.html", context)
 
@@ -98,13 +126,11 @@ async def agents_home(
 @router.get("/AGENTS/settings", response_class=HTMLResponse)
 async def pages_dispatch(
     request: Request,
-    page: int = 1,
     limit: int = 50,
     db: Session = Depends(get_db),
 ):
     accounts = list_accounts(db)
     path = request.url.path
-    last_seen = datetime.now(tz=timezone.utc).isoformat()
     template_map = {
         "/AGENTS/accounts": "partials/page_accounts.html",
         "/AGENTS/post": "partials/page_post.html",
@@ -112,23 +138,13 @@ async def pages_dispatch(
         "/AGENTS/settings": "partials/page_settings.html",
     }
     content_template = template_map.get(path, "partials/page_timeline.html")
-    posts, has_next, safe_page, safe_limit = _paginate_posts(db, page, limit)
-    title, subtitle = _timeline_heading(db, account_id=None)
-    context = {
-        "accounts": accounts,
-        "title": title,
-        "subtitle": subtitle,
-        "content_template": content_template,
-        **_timeline_context(
-            request,
-            posts,
-            page=safe_page,
-            limit=safe_limit,
-            has_next=has_next,
-            last_seen=last_seen,
-        ),
-    }
-    if request.headers.get("HX-Request") == "true":
+    context = _shell_context(
+        request,
+        accounts=accounts,
+        content_template=content_template,
+        limit=limit,
+    )
+    if _is_hx(request):
         return templates.TemplateResponse(content_template, context)
     return templates.TemplateResponse("index.html", context)
 
@@ -147,25 +163,30 @@ async def account_posts_page(
         return templates.TemplateResponse(
             "partials/page_settings.html", {"request": request}
         )
+
     posts, has_next, safe_page, safe_limit = _paginate_posts(
         db, page, limit, account_id=account_id
     )
-    last_seen = datetime.now(tz=timezone.utc).isoformat()
     context = {
-        "request": request,
-        "accounts": accounts,
+        **_shell_context(
+            request,
+            accounts=accounts,
+            title=f"{account.name} Timeline",
+            subtitle="Account posts",
+            limit=safe_limit,
+            content_template="partials/page_account_posts.html",
+        ),
+        **_timeline_context(
+            request,
+            posts,
+            page=safe_page,
+            limit=safe_limit,
+            has_next=has_next,
+            account_id=account_id,
+        ),
         "account": account,
-        "posts": posts,
-        "last_seen": last_seen,
-        "page": safe_page,
-        "limit": safe_limit,
-        "has_next": has_next,
-        "account_id": account_id,
-        "title": f"{account.name} Timeline",
-        "subtitle": "Account posts",
-        "content_template": "partials/page_account_posts.html",
     }
-    if request.headers.get("HX-Request") == "true":
+    if _is_hx(request):
         return templates.TemplateResponse("partials/page_account_posts.html", context)
     return templates.TemplateResponse("index.html", context)
 
@@ -182,14 +203,7 @@ async def timeline_partial(
     posts, has_next, safe_page, safe_limit = _paginate_posts(
         db, page, limit, account_id=account_id
     )
-    last_seen = datetime.now(tz=timezone.utc).isoformat()
-    title = "Timeline"
-    subtitle = "Latest first"
-    if account_id is not None:
-        account = db.get(Account, account_id)
-        if account:
-            title = f"{account.name} Timeline"
-            subtitle = "Account posts"
+    title, subtitle = _timeline_heading(db, account_id=account_id)
     return templates.TemplateResponse(
         "partials/timeline.html",
         {
@@ -199,7 +213,6 @@ async def timeline_partial(
                 page=safe_page,
                 limit=safe_limit,
                 has_next=has_next,
-                last_seen=last_seen,
                 account_id=account_id,
             ),
             "title": title,
@@ -251,11 +264,17 @@ async def create_post_form(
     human_text: str = Form(""),
     goal: str = Form(""),
     result_summary: str = Form(""),
+    error_summary: str = Form(""),
     tags_csv: str = Form(""),
     db: Session = Depends(get_db),
 ):
     parsed_account_id = int(account_id) if account_id else None
-    valid_status = status if status in PostStatus.__members__ else "OK"
+    normalized_status = status.upper().strip()
+    valid_status = (
+        normalized_status
+        if normalized_status in PostStatus._value2member_map_
+        else PostStatus.OK.value
+    )
     post = Post(
         account_id=parsed_account_id,
         status=valid_status,
@@ -263,11 +282,12 @@ async def create_post_form(
         human_text=human_text[:POST_HUMAN_TEXT_MAX_CHARS],
         goal=goal,
         result_summary=result_summary,
+        error_summary=error_summary,
         tags_csv=tags_csv,
     )
     create_post(db, post)
+
     posts, has_next, safe_page, safe_limit = _paginate_posts(db, 1, 50)
-    last_seen = datetime.now(tz=timezone.utc).isoformat()
     title, subtitle = _timeline_heading(db, account_id=None)
     return templates.TemplateResponse(
         "partials/page_timeline.html",
@@ -278,7 +298,6 @@ async def create_post_form(
                 page=safe_page,
                 limit=safe_limit,
                 has_next=has_next,
-                last_seen=last_seen,
             ),
             "title": title,
             "subtitle": subtitle,
@@ -298,10 +317,10 @@ async def delete_post_form(
     post = get_post(db, post_id)
     if post:
         delete_post(db, post)
+
     posts, has_next, safe_page, safe_limit = _paginate_posts(
         db, page, limit, account_id=account_id
     )
-    last_seen = datetime.now(tz=timezone.utc).isoformat()
     title, subtitle = _timeline_heading(db, account_id=account_id)
     return templates.TemplateResponse(
         "partials/timeline.html",
@@ -312,7 +331,6 @@ async def delete_post_form(
                 page=safe_page,
                 limit=safe_limit,
                 has_next=has_next,
-                last_seen=last_seen,
                 account_id=account_id,
             ),
             "title": title,

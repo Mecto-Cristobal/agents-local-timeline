@@ -141,7 +141,7 @@ if (!container) {
   };
 
   const updateProgress = async () => {
-    const res = await fetch(\"/api/agents/posts?limit=200\");
+    const res = await fetch("/api/agents/posts?limit=200");
     if (!res.ok) return;
     const posts = await res.json();
     const counts = { OK: 0, WARN: 0, FAIL: 0 };
@@ -155,9 +155,9 @@ if (!container) {
       progressGroup.remove(progressGroup.children[0]);
     }
     const statuses = [
-      { key: \"OK\", color: 0x2f855a, x: -2 },
-      { key: \"WARN\", color: 0xc67c13, x: 0 },
-      { key: \"FAIL\", color: 0xb64242, x: 2 },
+      { key: "OK", color: 0x2f855a, x: -2 },
+      { key: "WARN", color: 0xc67c13, x: 0 },
+      { key: "FAIL", color: 0xb64242, x: 2 },
     ];
     statuses.forEach((status) => {
       const height = 0.5 + (counts[status.key] / maxCount) * 3.5;
@@ -185,7 +185,9 @@ if (!container) {
     raycaster.setFromCamera(pointer, camera);
     const meshes = [];
     scene.traverse((obj) => {
-      if (obj.isMesh && obj !== grid) meshes.push(obj);
+      if (obj.isMesh && obj !== grid && obj.parent !== progressGroup) {
+        meshes.push(obj);
+      }
     });
     const intersects = raycaster.intersectObjects(meshes);
     selectObject(intersects.length ? intersects[0].object : null);
@@ -224,7 +226,7 @@ if (!container) {
   loadBtn?.addEventListener("click", async () => {
     const id = sceneList.value;
     if (!id) return;
-    const res = await fetch(`/api/agents/scenes?account_id=`);
+    const res = await fetch("/api/agents/scenes");
     if (!res.ok) return;
     const scenes = await res.json();
     const sceneData = scenes.find((s) => String(s.id) === String(id));

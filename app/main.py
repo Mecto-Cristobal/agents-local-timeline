@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import logging
-import os
 import asyncio
 import contextlib
+import logging
+import os
+from collections.abc import AsyncIterator
 
 from fastapi import FastAPI
 from fastapi import Request
@@ -20,21 +21,6 @@ from app.services.wsl_queue import drain_wsl_queue
 
 logging.basicConfig(level=logging.INFO)
 
-app = FastAPI(title=APP_TITLE, description=APP_DESCRIPTION)
-
-app.state.broadcaster = Broadcaster()
-
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
-
-app.include_router(pages.router)
-app.include_router(api_posts.router)
-app.include_router(api_scenes.router)
-app.include_router(api_accounts.router)
-app.include_router(api_system.router)
-app.include_router(events.router)
-
-
-@app.on_event("startup")
 def bootstrap_system_post() -> None:
     if os.getenv("PYTEST_CURRENT_TEST"):
         return
@@ -71,18 +57,31 @@ async def _wsl_queue_worker() -> None:
         await asyncio.sleep(2)
 
 
-@app.on_event("startup")
-async def start_wsl_queue_worker() -> None:
-    app.state.wsl_queue_task = asyncio.create_task(_wsl_queue_worker())
-
-
-@app.on_event("shutdown")
-async def stop_wsl_queue_worker() -> None:
-    task = getattr(app.state, "wsl_queue_task", None)
-    if task:
+@contextlib.asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    bootstrap_system_post()
+    task = asyncio.create_task(_wsl_queue_worker())
+    app.state.wsl_queue_task = task
+    try:
+        yield
+    finally:
         task.cancel()
         with contextlib.suppress(asyncio.CancelledError):
             await task
+
+
+app = FastAPI(title=APP_TITLE, description=APP_DESCRIPTION, lifespan=lifespan)
+
+app.state.broadcaster = Broadcaster()
+
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+app.include_router(pages.router)
+app.include_router(api_posts.router)
+app.include_router(api_scenes.router)
+app.include_router(api_accounts.router)
+app.include_router(api_system.router)
+app.include_router(events.router)
 
 
 @app.exception_handler(Exception)
