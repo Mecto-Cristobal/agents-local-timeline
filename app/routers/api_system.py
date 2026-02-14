@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.core.config import POST_HUMAN_TEXT_MAX_CHARS
 from app.db.session import get_db
 from app.schemas.post import PostOut
 from app.services.system_posts import create_system_post
@@ -14,7 +15,7 @@ router = APIRouter(prefix="/api/agents/system", tags=["System"])
 class SystemProgressIn(BaseModel):
     status: str = Field(default="OK")
     job_name: str = Field(default="agent-progress", max_length=200)
-    human_text: str = Field(max_length=280)
+    human_text: str = Field(max_length=POST_HUMAN_TEXT_MAX_CHARS)
     result_summary: str = Field(default="")
     error_summary: str = Field(default="")
     tags_csv: str = Field(default="system,progress")

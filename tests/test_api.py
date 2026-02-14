@@ -124,3 +124,57 @@ def test_delete_post():
     posts = client.get(f"/api/agents/posts?account_id={account['id']}").json()
     assert len(posts) == 1
     assert posts[0]["id"] == post_b["id"]
+
+
+def test_large_human_text_post():
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    TestingSessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    Base.metadata.create_all(bind=engine)
+
+    def override_get_db():
+        db = TestingSessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+
+    app.dependency_overrides[get_db] = override_get_db
+    client = TestClient(app)
+
+    long_text = "git update note " * 500
+    resp = client.post(
+        "/api/agents/posts",
+        json={"status": "OK", "job_name": "long-note", "human_text": long_text},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["human_text"] == long_text
+
+
+def test_large_system_progress_human_text():
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    TestingSessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    Base.metadata.create_all(bind=engine)
+
+    def override_get_db():
+        db = TestingSessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+
+    app.dependency_overrides[get_db] = override_get_db
+    client = TestClient(app)
+
+    long_text = "deploy memo " * 400
+    resp = client.post(
+        "/api/agents/system/progress",
+        json={
+            "status": "OK",
+            "job_name": "ops-long-note",
+            "human_text": long_text,
+            "result_summary": "accepted",
+            "tags_csv": "system,progress",
+        },
+    )
+    assert resp.status_code == 200
+    assert resp.json()["human_text"] == long_text

@@ -4,6 +4,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
+from app.core.config import POST_HUMAN_TEXT_MAX_CHARS
+
 
 class PostBase(BaseModel):
     account_id: int | None = None
@@ -13,7 +15,7 @@ class PostBase(BaseModel):
     version: str = Field(default="")
     when_ts: datetime | None = None
 
-    human_text: str = Field(default="", max_length=280)
+    human_text: str = Field(default="", max_length=POST_HUMAN_TEXT_MAX_CHARS)
     goal: str = Field(default="")
     result_summary: str = Field(default="")
 
@@ -42,7 +44,7 @@ class PostUpdate(BaseModel):
     env: str | None = None
     version: str | None = None
     when_ts: datetime | None = None
-    human_text: str | None = Field(default=None, max_length=280)
+    human_text: str | None = Field(default=None, max_length=POST_HUMAN_TEXT_MAX_CHARS)
     goal: str | None = None
     result_summary: str | None = None
     latency_p95_ms: float | None = None

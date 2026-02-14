@@ -6,6 +6,7 @@ from pathlib import Path
 import orjson
 from sqlalchemy.orm import Session
 
+from app.core.config import POST_HUMAN_TEXT_MAX_CHARS
 from app.models.account import Account
 from app.models.post import Post
 
@@ -59,7 +60,7 @@ def create_system_post(
         account_id=account.id,
         status=status,
         job_name=job_name,
-        human_text=human_text[:280],
+        human_text=human_text[:POST_HUMAN_TEXT_MAX_CHARS],
         result_summary=result_summary,
         error_summary=error_summary,
         tags_csv=tags_csv,

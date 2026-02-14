@@ -15,7 +15,7 @@ env:
 version:
 when_ts: 2026-02-14T12:34:56Z
 
-human_text: 280文字以内の本文
+human_text: 10,000文字以内の本文
 goal:
 result_summary:
 

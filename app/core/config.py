@@ -13,3 +13,4 @@ DB_URL = f"sqlite:///{DB_PATH}"
 APP_TITLE = "AGENTS"
 APP_DESCRIPTION = "Local-only agents timeline. Do not expose to the internet."
 WSL_QUEUE_PATH = DATA_DIR / "wsl_post_queue.ndjson"
+POST_HUMAN_TEXT_MAX_CHARS = int(os.getenv("AGENTS_HUMAN_TEXT_MAX_CHARS", "10000"))

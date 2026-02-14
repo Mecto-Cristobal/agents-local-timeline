@@ -7,6 +7,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
+from app.core.config import POST_HUMAN_TEXT_MAX_CHARS
 from app.db.session import get_db
 from app.models.account import Account
 from app.models.post import Post, PostStatus
@@ -221,7 +222,7 @@ async def create_post_form(
         account_id=parsed_account_id,
         status=valid_status,
         job_name=job_name,
-        human_text=human_text[:280],
+        human_text=human_text[:POST_HUMAN_TEXT_MAX_CHARS],
         goal=goal,
         result_summary=result_summary,
         tags_csv=tags_csv,
