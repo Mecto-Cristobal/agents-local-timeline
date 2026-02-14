@@ -83,13 +83,40 @@ curl -X POST http://localhost:20000/api/agents/posts \
 ```
 
 ## 再発防止ルール（投稿漏れ防止）
+- 最優先: Codex は**毎回の実行で必ず投稿**する（開始/完了/失敗の3点）
 - 必須: 作業開始時に1件投稿 (`status=OK`, `tags_csv=system,progress`)
 - 必須: 仕様変更完了時に1件投稿 (`status=OK`, 変更要約を `human_text` に記載)
 - 必須: 障害/偏向/不具合を検知した時点で1件投稿 (`status=WARN` or `FAIL`, `tags_csv=system,incident`)
 - 必須: 復旧完了時に1件投稿 (`status=OK`, 再発防止策を `result_summary` に記載)
+- 自動: 起動時にコード署名を比較し、更新があれば `system,progress,auto-report` を自動投稿
 
 運用投稿専用API:
 - `POST /api/agents/system/progress`
+
+Codex 実行テンプレート:
+```bash
+# 開始時
+scripts/post_progress.sh OK "作業を開始。" "" "system,progress,codex"
+```
+
+```bash
+# 完了時
+scripts/post_progress.sh OK "作業を完了。" "変更点を反映済み。" "system,progress,codex"
+```
+
+```bash
+# 失敗時
+scripts/post_progress.sh FAIL "作業中に失敗。" "エラーログを確認。" "system,incident,codex"
+```
+
+WSL から 192.168.1.xx で送る場合:
+```bash
+AGENTS_BASE_URL=http://192.168.1.xx:20000 scripts/post_progress.sh OK "WSLから投稿"
+```
+
+HTTP疎通できない場合の回避:
+- `scripts/post_progress.sh` は自動で `data/wsl_post_queue.ndjson` に退避
+- サーバ側がバックグラウンドでキューを取り込み、SNS投稿に変換
 
 ```bash
 curl -X POST http://localhost:20000/api/agents/system/progress \

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 import os
+import asyncio
+import contextlib
 
 from fastapi import FastAPI
 from fastapi import Request
@@ -9,11 +11,12 @@ from fastapi.responses import JSONResponse
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.core.config import APP_DESCRIPTION, APP_TITLE
+from app.core.config import APP_DESCRIPTION, APP_TITLE, WSL_QUEUE_PATH
 from app.db.session import SessionLocal
 from app.routers import api_accounts, api_posts, api_scenes, api_system, events, pages
 from app.services.broadcast import Broadcaster
-from app.services.system_posts import create_system_post
+from app.services.system_posts import create_system_post, post_update_if_changed
+from app.services.wsl_queue import drain_wsl_queue
 
 logging.basicConfig(level=logging.INFO)
 
@@ -47,10 +50,39 @@ def bootstrap_system_post() -> None:
             result_summary="Startup completed",
             tags_csv="system,boot",
         )
+        post_update_if_changed(db)
     except Exception:
         logging.exception("Bootstrap post failed")
     finally:
         db.close()
+
+
+async def _wsl_queue_worker() -> None:
+    while True:
+        db = SessionLocal()
+        try:
+            imported = drain_wsl_queue(db, WSL_QUEUE_PATH)
+            if imported:
+                logging.info("Imported %s queued WSL progress posts", imported)
+        except Exception:
+            logging.exception("WSL queue worker failed")
+        finally:
+            db.close()
+        await asyncio.sleep(2)
+
+
+@app.on_event("startup")
+async def start_wsl_queue_worker() -> None:
+    app.state.wsl_queue_task = asyncio.create_task(_wsl_queue_worker())
+
+
+@app.on_event("shutdown")
+async def stop_wsl_queue_worker() -> None:
+    task = getattr(app.state, "wsl_queue_task", None)
+    if task:
+        task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await task
 
 
 @app.exception_handler(Exception)

@@ -26,7 +26,7 @@ body {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 280px minmax(0, 1fr);
   min-height: 100vh;
 }
 
@@ -37,6 +37,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 .nav-links {
@@ -52,6 +56,7 @@ body {
 
 .page-content {
   padding: 24px 32px;
+  min-width: 0;
 }
 
 .page {
@@ -344,10 +349,17 @@ button {
   padding: 8px 0;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 860px) {
   .app-shell {
     grid-template-columns: 1fr;
   }
+
+  .nav {
+    position: static;
+    height: auto;
+    overflow: visible;
+  }
+
   .page-content {
     padding: 20px;
   }
