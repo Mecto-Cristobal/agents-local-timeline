@@ -1,0 +1,28 @@
+<article class="card status-{{ post.status | lower }}">
+  <header>
+    <div class="status">{{ post.status }}</div>
+    <div class="job">{{ post.job_name }}</div>
+    <div class="meta">
+      {% if post.account %}
+        <span class="pill" style="background: {{ post.account.color }}">{{ post.account.name }}</span>
+      {% endif %}
+      <span>{{ post.created_at }}</span>
+    </div>
+  </header>
+  <div class="body">
+    {% if post.goal %}<div><strong>Goal</strong> {{ post.goal }}</div>{% endif %}
+    {% if post.result_summary %}<div><strong>Result</strong> {{ post.result_summary }}</div>{% endif %}
+    {% if post.anomaly_summary %}<div><strong>Anomaly</strong> {{ post.anomaly_summary }}</div>{% endif %}
+    {% if post.error_summary %}<div><strong>Error</strong> {{ post.error_summary }}</div>{% endif %}
+    {% if post.next_action %}<div><strong>Next</strong> {{ post.next_action }}</div>{% endif %}
+  </div>
+  <footer>
+    <div class="tags">{{ post.tags_csv }}</div>
+    {% if post.raw_payload_json %}
+    <details>
+      <summary>Raw payload</summary>
+      <pre class="payload">{{ post.raw_payload_json }}</pre>
+    </details>
+    {% endif %}
+  </footer>
+</article>

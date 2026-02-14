@@ -1,0 +1,12 @@
+<div class="timeline-header">
+  <h2>Timeline</h2>
+  <span class="hint">Latest first</span>
+</div>
+<div id="timeline-meta" data-last-seen="{{ last_seen }}"></div>
+<div class="cards">
+  {% for post in posts %}
+    {% include "partials/post_card.html" %}
+  {% else %}
+    <div class="empty">No posts yet.</div>
+  {% endfor %}
+</div>

@@ -1,0 +1,16 @@
+<div class="accounts">
+  {% for account in accounts %}
+  <form
+    class="account-row"
+    hx-post="/accounts/{{ account.id }}"
+    hx-target="#accounts-list"
+    hx-swap="innerHTML"
+  >
+    <input name="name" value="{{ account.name }}" />
+    <input name="color" type="color" value="{{ account.color }}" />
+    <button type="submit">Save</button>
+  </form>
+  {% else %}
+  <div class="empty">No accounts yet.</div>
+  {% endfor %}
+</div>
