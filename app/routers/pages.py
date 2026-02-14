@@ -11,7 +11,7 @@ from app.db.session import get_db
 from app.models.account import Account
 from app.models.post import Post, PostStatus
 from app.services.accounts import list_accounts, upsert_account
-from app.services.posts import create_post, list_posts
+from app.services.posts import create_post, delete_post, get_post, list_posts
 
 router = APIRouter()
 
@@ -240,5 +240,44 @@ async def create_post_form(
             "has_next": has_next,
             "title": "Timeline",
             "subtitle": "Latest first",
+        },
+    )
+
+
+@router.post("/posts/{post_id}/delete", response_class=HTMLResponse)
+async def delete_post_form(
+    request: Request,
+    post_id: int,
+    page: int = 1,
+    limit: int = 50,
+    account_id: int | None = None,
+    db: Session = Depends(get_db),
+):
+    post = get_post(db, post_id)
+    if post:
+        delete_post(db, post)
+    posts, has_next, safe_page, safe_limit = _paginate_posts(
+        db, page, limit, account_id=account_id
+    )
+    last_seen = datetime.now(tz=timezone.utc).isoformat()
+    title = "Timeline"
+    subtitle = "Latest first"
+    if account_id is not None:
+        account = db.get(Account, account_id)
+        if account:
+            title = f"{account.name} Timeline"
+            subtitle = "Account posts"
+    return templates.TemplateResponse(
+        "partials/timeline.html",
+        {
+            "request": request,
+            "posts": posts,
+            "last_seen": last_seen,
+            "page": safe_page,
+            "limit": safe_limit,
+            "has_next": has_next,
+            "account_id": account_id,
+            "title": title,
+            "subtitle": subtitle,
         },
     )

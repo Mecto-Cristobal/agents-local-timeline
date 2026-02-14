@@ -70,3 +70,8 @@ def list_posts(
         stmt = stmt.where(and_(*filters))
     stmt = stmt.order_by(desc(Post.created_at)).offset(offset).limit(limit)
     return list(db.execute(stmt).scalars().all())
+
+
+def delete_post(db: Session, post: Post) -> None:
+    db.delete(post)
+    db.commit()

@@ -86,3 +86,41 @@ def test_system_progress_post():
     body = resp.json()
     assert body["job_name"] == "ops-bias-review"
     assert body["human_text"] == "Bias incident reviewed and mitigation posted."
+
+
+def test_delete_post():
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    TestingSessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    Base.metadata.create_all(bind=engine)
+
+    def override_get_db():
+        db = TestingSessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+
+    app.dependency_overrides[get_db] = override_get_db
+    client = TestClient(app)
+
+    account = client.post(
+        "/api/agents/accounts",
+        json={"name": "A", "color": "#111111", "settings_json": {}},
+    ).json()
+
+    post_a = client.post(
+        "/api/agents/posts",
+        json={"account_id": account["id"], "job_name": "Job-A1", "status": "OK"},
+    ).json()
+    post_b = client.post(
+        "/api/agents/posts",
+        json={"account_id": account["id"], "job_name": "Job-A2", "status": "OK"},
+    ).json()
+
+    delete_resp = client.delete(f"/api/agents/posts/{post_a['id']}")
+    assert delete_resp.status_code == 200
+    assert delete_resp.json()["post_id"] == post_a["id"]
+
+    posts = client.get(f"/api/agents/posts?account_id={account['id']}").json()
+    assert len(posts) == 1
+    assert posts[0]["id"] == post_b["id"]

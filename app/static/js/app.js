@@ -8,6 +8,11 @@
   const state = {
     unread: 0,
     lastSeen: timeline?.dataset.lastSeen || new Date().toISOString(),
+    limit:
+      new URLSearchParams(window.location.search).get("limit") ||
+      homeBtn?.getAttribute("hx-get")?.match(/limit=(\d+)/)?.[1] ||
+      "50",
+    autoRefreshInFlight: false,
   };
 
   const setUnread = (value) => {
@@ -25,6 +30,23 @@
     if (Notification.permission === "granted") {
       new Notification("New agent post", { body: "A new post arrived." });
     }
+  };
+
+  const isHomeTimelineNearTop = () => {
+    if (window.location.pathname !== "/AGENTS") return false;
+    const activeTimeline = document.getElementById("timeline");
+    if (!activeTimeline) return false;
+    return activeTimeline.scrollTop <= 120;
+  };
+
+  const refreshTimelineFirstPage = () => {
+    if (state.autoRefreshInFlight) return;
+    state.autoRefreshInFlight = true;
+    htmx.ajax(
+      "GET",
+      `/AGENTS/timeline?page=1&limit=${encodeURIComponent(state.limit)}`,
+      { target: "#timeline", swap: "innerHTML" }
+    );
   };
 
   const refreshLastSeen = () => {
@@ -53,6 +75,11 @@
         refreshLastSeen();
       }
     }
+    state.autoRefreshInFlight = false;
+  });
+
+  document.body.addEventListener("htmx:responseError", () => {
+    state.autoRefreshInFlight = false;
   });
 
   notifyBtn?.addEventListener("click", async () => {
@@ -79,7 +106,15 @@
       } catch {
         createdAt = null;
       }
-      markUnread(createdAt);
+      if (isHomeTimelineNearTop()) {
+        refreshTimelineFirstPage();
+        setUnread(0);
+        if (createdAt) {
+          state.lastSeen = createdAt;
+        }
+      } else {
+        markUnread(createdAt);
+      }
     });
     source.addEventListener("error", () => {
       source.close();
@@ -94,7 +129,12 @@
       if (!res.ok) return;
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
-        markUnread();
+        if (isHomeTimelineNearTop()) {
+          refreshTimelineFirstPage();
+          setUnread(0);
+        } else {
+          markUnread();
+        }
       }
     } catch {
       // ignore network errors

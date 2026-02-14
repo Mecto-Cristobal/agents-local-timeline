@@ -48,7 +48,32 @@ body {
   gap: 10px;
 }
 
+.nav-accounts {
+  display: grid;
+  gap: 10px;
+}
+
+.nav-accounts h3 {
+  margin: 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.account-nav-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
 .nav-links button {
+  text-align: left;
+  padding: 10px 12px;
+  background: #f6efe6;
+}
+
+.account-view-btn {
   text-align: left;
   padding: 10px 12px;
   background: #f6efe6;
@@ -264,6 +289,18 @@ button {
 
 .card .tags {
   color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.post-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.post-delete-btn {
+  background: #f4e3e3;
+  border-color: #debbbb;
+  color: #7b2222;
   font-size: 0.8rem;
 }
 

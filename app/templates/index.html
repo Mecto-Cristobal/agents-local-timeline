@@ -34,7 +34,7 @@
         hx-get="/AGENTS/post"
         hx-target="#page-content"
         hx-push-url="true"
-      >Post作成</button>
+      >Post</button>
       <button
         hx-get="/AGENTS/3d"
         hx-target="#page-content"
@@ -44,8 +44,26 @@
         hx-get="/AGENTS/settings"
         hx-target="#page-content"
         hx-push-url="true"
-      >各種設定</button>
+      >Settings</button>
     </nav>
+
+    <section class="nav-accounts">
+      <h3>Account Posts</h3>
+      {% for account in accounts %}
+      <div class="account-nav-row">
+        <button
+          class="account-view-btn"
+          hx-get="/AGENTS/account/{{ account.id }}"
+          hx-target="#page-content"
+          hx-push-url="true"
+        >
+          {{ account.name }} - View posts
+        </button>
+      </div>
+      {% else %}
+      <div class="empty">No accounts yet.</div>
+      {% endfor %}
+    </section>
   </aside>
 
   <main id="page-content" class="page-content">
@@ -53,3 +71,4 @@
   </main>
 </div>
 {% endblock %}
+

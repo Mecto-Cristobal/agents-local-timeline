@@ -16,6 +16,17 @@
   </div>
   <footer>
     <div class="tags">{{ post.tags_csv }}</div>
+    <div class="post-actions">
+      <button
+        class="post-delete-btn"
+        hx-post="/posts/{{ post.id }}/delete?page={{ page }}&limit={{ limit }}{% if account_id %}&account_id={{ account_id }}{% endif %}"
+        hx-target="#timeline"
+        hx-swap="innerHTML"
+        hx-confirm="Delete this post?"
+      >
+        Delete post
+      </button>
+    </div>
     <details>
       <summary>Structured data</summary>
       <div class="structured">
